@@ -1,0 +1,61 @@
+{
+  "extends": ["eslint:recommended", "plugin:react/recommended", "didit"],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jest": true
+  },
+  "parser": "babel-eslint",
+  "plugins": ["flowtype", "react", "import", "react-native"],
+  "rules": {
+    "no-use-before-define": ["error", { "variables": false }],
+    // disable rule from didit ... not sure it makes the code more readable
+    "object-curly-newline": 0,
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowShortCircuit": true,
+        "allowTernary": false,
+        "allowTaggedTemplates": false
+      }
+    ],
+    // disallow dangling underscores in identifiers
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": [],
+        "allowAfterThis": true,
+        "allowAfterSuper": false,
+        "enforceInMethodNames": false
+      }
+    ],
+    // rely on flow for all type checking
+    "react/no-unused-prop-types": 0,
+    "operator-linebreak": ["error", "after"],
+    // TODO: This sucker really needs an autofix in order to use. i would rather spend a week
+    //   coming up with an autofix than 4 hours adjusting the imports for this
+    //   project this one time. How does this not have an autofix already?
+    // "import/order": ["error", {
+    //   groups: ["builtin", "external", ["internal", "parent", "sibling", "index"]],
+    //   newlines-between: "always"
+    // }],
+    "quote-props": [
+      "error",
+      "as-needed",
+      {
+        "keywords": false,
+        "unnecessary": true,
+        "numbers": true
+      }
+    ],
+    "react-native/no-unused-styles": "error",
+    "react-native/split-platform-components": "error",
+    "react-native/no-inline-styles": "warn",
+    "react-native/no-color-literals": "error"
+  },
+  "globals": {
+    "NODE_ENV": true,
+    "sinon": true
+  }
+}

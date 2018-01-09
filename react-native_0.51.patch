@@ -1,0 +1,166 @@
+diff -ru ../../react-native/Libraries/Network/RCTHTTPRequestHandler.mm node_modules/react-native/Libraries/Network/RCTHTTPRequestHandler.mm
+--- a/node_modules/react-native/Libraries/Network/RCTHTTPRequestHandler.mm	2017-09-18 17:00:09.000000000 -0600
++++ b/node_modules/react-native/Libraries/Network/RCTHTTPRequestHandler.mm	2017-09-19 09:22:24.000000000 -0600
+@@ -96,6 +96,11 @@
+
+ #pragma mark - NSURLSession delegate
+
++- (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler
++{
++    completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
++}
++
+ - (void)URLSession:(NSURLSession *)session
+               task:(NSURLSessionTask *)task
+    didSendBodyData:(int64_t)bytesSent
+diff -ru ../../react-native/Libraries/WebSocket/RCTWebSocketExecutor.m node_modules/react-native/Libraries/WebSocket/RCTWebSocketExecutor.m
+--- a/node_modules/react-native/Libraries/WebSocket/RCTWebSocketExecutor.m	2017-09-18 17:00:11.000000000 -0600
++++ b/node_modules/react-native/Libraries/WebSocket/RCTWebSocketExecutor.m	2017-09-18 17:27:58.000000000 -0600
+@@ -54,7 +54,7 @@
+ - (void)setUp
+ {
+   if (!_url) {
+-    NSInteger port = [[[_bridge bundleURL] port] integerValue] ?: 8081;
++    NSInteger port = [[[_bridge bundleURL] port] integerValue] ?: 8088;
+     NSString *host = [[_bridge bundleURL] host] ?: @"localhost";
+     NSString *URLString = [NSString stringWithFormat:@"http://%@:%zd/debugger-proxy?role=client", host, port];
+     _url = [RCTConvert NSURL:URLString];
+diff -ru ../../react-native/React/Base/RCTBundleURLProvider.m node_modules/react-native/React/Base/RCTBundleURLProvider.m
+--- a/node_modules/react-native/React/Base/RCTBundleURLProvider.m	2017-09-18 17:00:25.000000000 -0600
++++ b/node_modules/react-native/React/Base/RCTBundleURLProvider.m	2017-09-19 10:42:01.000000000 -0600
+@@ -14,7 +14,7 @@
+
+ NSString *const RCTBundleURLProviderUpdatedNotification = @"RCTBundleURLProviderUpdatedNotification";
+
+-const NSUInteger kRCTBundleURLProviderDefaultPort = 8081;
++const NSUInteger kRCTBundleURLProviderDefaultPort = 8088;
+
+ static NSString *const kRCTJsLocationKey = @"RCT_jsLocation";
+ static NSString *const kRCTEnableLiveReloadKey = @"RCT_enableLiveReload";
+diff -ru ../../react-native/React/React.xcodeproj/project.pbxproj node_modules/react-native/React/React.xcodeproj/project.pbxproj
+--- a/node_modules/react-native/React/React.xcodeproj/project.pbxproj	2017-09-18 17:00:26.000000000 -0600
++++ b/node_modules/react-native/React/React.xcodeproj/project.pbxproj	2017-09-18 17:09:33.000000000 -0600
+@@ -3461,7 +3461,7 @@
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 			shellPath = /bin/sh;
+-			shellScript = "if [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost 8081 ; then\n    if ! curl -s \"http://localhost:8081/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port 8081 already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi";
++			shellScript = "if [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost 8088 ; then\n    if ! curl -s \"http://localhost:8088/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port 8088 already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi";
+ 			showEnvVarsInLog = 0;
+ 		};
+ 		142C4F7F1B582EA6001F0B58 /* Include RCTJSCProfiler */ = {
+@@ -3520,7 +3520,7 @@
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 			shellPath = /bin/sh;
+-			shellScript = "if [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\nif nc -w 5 -z localhost 8081 ; then\nif ! curl -s \"http://localhost:8081/status\" | grep -q \"packager-status:running\" ; then\necho \"Port 8081 already in use, packager is either not running or not running correctly\"\nexit 2\nfi\nelse\nopen \"$SRCROOT/../scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\nfi\nfi";
++			shellScript = "if [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\nif nc -w 5 -z localhost 8088 ; then\nif ! curl -s \"http://localhost:8088/status\" | grep -q \"packager-status:running\" ; then\necho \"Port 8088 already in use, packager is either not running or not running correctly\"\nexit 2\nfi\nelse\nopen \"$SRCROOT/../scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\nfi\nfi";
+ 			showEnvVarsInLog = 0;
+ 		};
+ 		3D383D3E1EBD27B9005632C8 /* Install Third Party */ = {
+diff -ru ../../react-native/ReactAndroid/src/main/java/com/facebook/react/common/DebugServerException.java node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/common/DebugServerException.java
+--- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/common/DebugServerException.java	2017-09-18 17:00:29.000000000 -0600
++++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/common/DebugServerException.java	2017-09-18 17:54:26.000000000 -0600
+@@ -30,8 +30,8 @@
+       "\u2022 Ensure that the packager server is running\n" +
+       "\u2022 Ensure that your device/emulator is connected to your machine and has USB debugging enabled - run 'adb devices' to see a list of connected devices\n" +
+       "\u2022 Ensure Airplane Mode is disabled\n" +
+-      "\u2022 If you're on a physical device connected to the same machine, run 'adb reverse tcp:8081 tcp:8081' to forward requests from your device\n" +
+-      "\u2022 If your device is on the same Wi-Fi network, set 'Debug server host & port for device' in 'Dev settings' to your machine's IP address and the port of the local dev server - e.g. 10.0.1.1:8081\n\n";
++      "\u2022 If you're on a physical device connected to the same machine, run 'adb reverse tcp:8088 tcp:8088' to forward requests from your device\n" +
++      "\u2022 If your device is on the same Wi-Fi network, set 'Debug server host & port for device' in 'Dev settings' to your machine's IP address and the port of the local dev server - e.g. 10.0.1.1:8088\n\n";
+
+   public static DebugServerException makeGeneric(String reason, Throwable t) {
+     return makeGeneric(reason, "", t);
+diff -ru ../../react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoHelpers.java node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoHelpers.java
+--- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoHelpers.java	2017-09-18 17:00:31.000000000 -0600
++++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoHelpers.java	2017-09-18 17:28:47.000000000 -0600
+@@ -12,7 +12,7 @@
+   public static final String GENYMOTION_LOCALHOST = "10.0.3.2";
+   public static final String DEVICE_LOCALHOST = "localhost";
+
+-  private static final int DEBUG_SERVER_HOST_PORT = 8081;
++  private static final int DEBUG_SERVER_HOST_PORT = 8088;
+   private static final int INSPECTOR_PROXY_PORT = 8082;
+
+   private static boolean isRunningOnGenymotion() {
+diff -ru ../../react-native/ReactAndroid/src/main/java/com/facebook/react/packagerconnection/PackagerConnectionSettings.java node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/packagerconnection/PackagerConnectionSettings.java
+--- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/packagerconnection/PackagerConnectionSettings.java	2017-09-18 17:00:31.000000000 -0600
++++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/packagerconnection/PackagerConnectionSettings.java	2017-09-18 17:53:51.000000000 -0600
+@@ -46,7 +46,7 @@
+     if (host.equals(AndroidInfoHelpers.DEVICE_LOCALHOST)) {
+       FLog.w(
+         TAG,
+-        "You seem to be running on device. Run 'adb reverse tcp:8081 tcp:8081' " +
++        "You seem to be running on device. Run 'adb reverse tcp:8088 tcp:8088' " +
+           "to forward the debug server's port to the device.");
+     }
+
+diff -ru ../../react-native/local-cli/runAndroid/runAndroid.js node_modules/react-native/local-cli/runAndroid/runAndroid.js
+--- a/node_modules/react-native/local-cli/runAndroid/runAndroid.js	2017-09-18 17:00:13.000000000 -0600
++++ b/node_modules/react-native/local-cli/runAndroid/runAndroid.js	2017-09-18 17:04:16.000000000 -0600
+@@ -56,10 +56,10 @@
+ }
+
+ // Runs ADB reverse tcp:8081 tcp:8081 to allow loading the jsbundle from the packager
+-function tryRunAdbReverse(device) {
++function tryRunAdbReverse(packagerPort, device) {
+   try {
+     const adbPath = getAdbPath();
+-    const adbArgs = ['reverse', 'tcp:8081', 'tcp:8081'];
++    const adbArgs = ['reverse', `tcp:${packagerPort}`, `tcp:${packagerPort}`];
+
+     // If a device is specified then tell adb to use it
+     if (device) {
+@@ -167,7 +167,7 @@
+ }
+
+ function installAndLaunchOnDevice(args, selectedDevice, packageNameWithSuffix, packageName, adbPath) {
+-  tryRunAdbReverse(selectedDevice);
++  tryRunAdbReverse(args.port, selectedDevice);
+   tryInstallAppOnDevice(args, selectedDevice);
+   tryLaunchAppOnDevice(selectedDevice, packageNameWithSuffix, packageName, adbPath, args.mainActivity);
+ }
+@@ -216,7 +216,7 @@
+     const devices = adb.getDevices();
+     if (devices && devices.length > 0) {
+       devices.forEach((device) => {
+-        tryRunAdbReverse(device);
++        tryRunAdbReverse(args.port, device);
+         tryLaunchAppOnDevice(device, packageNameWithSuffix, packageName, adbPath, args.mainActivity);
+       });
+     } else {
+@@ -307,5 +307,9 @@
+   }, {
+     command: '--no-packager',
+     description: 'Do not launch packager while building',
++  }, {
++    command: '--port [number]',
++    default: 8081,
++    parse: (val: string) => Number(val),
+   }],
+ };
+diff -ru ../../react-native/local-cli/server/server.js node_modules/react-native/local-cli/server/server.js
+--- a/node_modules/react-native/local-cli/server/server.js	2017-09-18 17:00:13.000000000 -0600
++++ b/node_modules/react-native/local-cli/server/server.js	2017-09-18 17:07:53.000000000 -0600
+@@ -63,7 +63,7 @@
+   description: 'starts the webserver',
+   options: [{
+     command: '--port [number]',
+-    default: 8081,
++    default: 8088,
+     parse: (val: string) => Number(val),
+   }, {
+     command: '--host [string]',
+diff -ru ../../react-native/local-cli/util/isPackagerRunning.js node_modules/react-native/local-cli/util/isPackagerRunning.js
+--- a/node_modules/react-native/local-cli/util/isPackagerRunning.js	2017-09-18 17:00:14.000000000 -0600
++++ b/node_modules/react-native/local-cli/util/isPackagerRunning.js	2017-09-18 17:10:31.000000000 -0600
+@@ -20,7 +20,7 @@
+  *                     packager to be running.
+  */
+ function isPackagerRunning() {
+-  return fetch('http://localhost:8081/status').then(
++  return fetch('http://localhost:8088/status').then(
+     res => res.text().then(body =>
+       body === 'packager-status:running' ? 'running' : 'unrecognized'
+     ),

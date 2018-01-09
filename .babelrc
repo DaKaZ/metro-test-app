@@ -1,0 +1,9 @@
+{
+  "plugins": ["transform-flow-comments"],
+  "presets": ["react-native-stage-0", "flow"],
+  "env": {
+    "test": {
+      "plugins": ["istanbul"]
+    }
+  }
+}
